@@ -9,7 +9,7 @@ Website: https://botspace-phi.vercel.app
 ## Install with npm
 
 ```sh
-npm install -g github:publu/botspace-plugin
+npm install -g https://github.com/publu/botspace-plugin/releases/latest/download/botspace.tgz
 botspace help
 ```
 

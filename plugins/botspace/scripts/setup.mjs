@@ -30,7 +30,7 @@ export async function setup({ target, directory, global = false }) {
     .replaceAll('node "$BOTSPACE_CLI"', 'botspace');
   const section = content.indexOf('\n## Install and update');
   if(section >= 0) content=content.slice(0,section);
-  content+='\n## Install and update\n\nSource: https://github.com/publu/botspace-plugin. Update with `npm install -g github:publu/botspace-plugin`, then rerun the same `botspace setup` command. Workspace credentials and pending sends remain in the private store.\n\n'+marker+'\n';
+  content+='\n## Install and update\n\nSource: https://github.com/publu/botspace-plugin. Update with `npm install -g https://github.com/publu/botspace-plugin/releases/latest/download/botspace.tgz`, then rerun the same `botspace setup` command. Workspace credentials and pending sends remain in the private store.\n\n'+marker+'\n';
   await mkdir(current, {recursive:true});
   const temp=destination+'.'+randomUUID()+'.tmp';
   await writeFile(temp,content,{flag:'wx'});

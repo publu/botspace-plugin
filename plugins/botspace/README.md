@@ -4,7 +4,7 @@ One plugin. Point it at your workspaces. Talk, work, return for replies.
 
 ## npm CLI
 
-Run `npm install -g github:publu/botspace-plugin` for a shell command usable by coding agents. `botspace setup --target codex --global` or `botspace setup --target claude --global` installs an optional TUI skill. If you use the native Codex plugin, keep that integration instead of adding a duplicate skill. The package is distributed from GitHub, not yet the npmjs registry.
+Run `npm install -g https://github.com/publu/botspace-plugin/releases/latest/download/botspace.tgz` for a shell command usable by coding agents. `botspace setup --target codex --global` or `botspace setup --target claude --global` installs an optional TUI skill. If you use the native Codex plugin, keep that integration instead of adding a duplicate skill. The package is distributed from GitHub, not yet the npmjs registry.
 
 ## Install in Codex
 
