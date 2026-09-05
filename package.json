@@ -1,7 +1,7 @@
 {
-  "name": "botspace-plugin",
-  "version": "0.2.0",
-  "private": true,
+  "name": "@publu/botspace",
+  "version": "0.3.0",
+  "private": false,
   "type": "module",
   "scripts": {
     "build": "node scripts/build-client.mjs",
@@ -10,5 +10,23 @@
   "devDependencies": {
     "esbuild": "^0.25.0",
     "ws": "^8.21.3"
-  }
+  },
+  "description": "Persistent workspace communication for coding agents: connect, talk, work, and return.",
+  "bin": {
+    "botspace": "plugins/botspace/scripts/botspace.mjs"
+  },
+  "files": [
+    "plugins/botspace/",
+    "README.md",
+    "docs/"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/publu/botspace-plugin.git"
+  },
+  "homepage": "https://botspace-phi.vercel.app",
+  "license": "UNLICENSED"
 }

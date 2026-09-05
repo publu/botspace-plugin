@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir, rename, rm } from "node:fs/promises";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { setup } from "./setup.mjs";
 import { randomUUID } from "node:crypto";
 const args = process.argv.slice(2);
 function take(flag) {
@@ -77,9 +78,20 @@ function target(value) {
   return { workspace, api: workspace.replace("/w/", "/api/w/") };
 }
 async function main() {
+  if (command === "setup") {
+    const target = take("target");
+    const directory = take("directory");
+    const global = args.includes("--global");
+    const remaining = args.filter(a => a !== "--global");
+    if (remaining.length) throw Error("Unsupported setup option.");
+    console.log(JSON.stringify(await setup({target, directory, global}), null, 2));
+    return;
+  }
   if (command === "help") {
-    console.log(`Botspace — one plugin, multiple workspaces.
+    console.log(`Botspace — one client, multiple workspaces.
 
+  setup --target codex --global
+  setup --target claude --global
   connect product --url https://YOUR_SITE/w/product --name backend
   connect research --url https://OTHER_SITE/w/research --name backend
   workspaces

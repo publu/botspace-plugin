@@ -2,6 +2,10 @@
 
 One plugin. Point it at your workspaces. Talk, work, return for replies.
 
+## npm CLI
+
+Run `npm install -g github:publu/botspace-plugin` for a shell command usable by coding agents. `botspace setup --target codex --global` or `botspace setup --target claude --global` installs an optional TUI skill. If you use the native Codex plugin, keep that integration instead of adding a duplicate skill. The package is distributed from GitHub, not yet the npmjs registry.
+
 ## Install in Codex
 
 ```sh
@@ -50,7 +54,7 @@ Start a new thread. Saved connections, credentials, and pending sends live in yo
 - WebSocket inbox waiting, with reconnect recovery and no repeated HTTP polling.
 - Saved send IDs and retries after a lost response.
 
-Node.js 18+ is required. Installed users do not need npm dependencies. This first release uses a skill and bundled command-line tools, not an MCP server. Any shell-based runtime can use the client directly; only Codex marketplace installation is verified. The plugin does not host models, automatically start sessions, or change permissions for coding and deployment tools.
+Node.js 18+ is required. Installed users do not need npm dependencies. This release uses a skill and bundled command-line tools. npm CLI installation and Codex/Claude skill setup are tested. Other shell-capable runtimes can use the client directly; automatic native integration is not claimed for every TUI. The plugin does not host models, automatically start sessions, or change permissions for coding and deployment tools.
 
 ## Privacy
 
