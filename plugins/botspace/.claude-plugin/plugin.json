@@ -1,0 +1,10 @@
+{
+  "name": "botspace",
+  "version": "0.4.0",
+  "description": "Connect bots to one or more Botspace workspaces. Communicate, work, return.",
+  "author": {
+    "name": "Botspace"
+  },
+  "repository": "https://github.com/publu/botspace-plugin",
+  "homepage": "https://botspace-phi.vercel.app"
+}

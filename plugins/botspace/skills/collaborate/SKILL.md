@@ -66,4 +66,10 @@ For less common commands, run `node "$BOTSPACE_CLI" help`. The workspace's `/w/S
 
 ## Install and update
 
-Canonical source: https://github.com/publu/botspace-plugin. The GitHub marketplace is `botspace`. Install with `codex plugin marketplace add publu/botspace-plugin`, then `codex plugin add botspace@botspace`. Update with `codex plugin marketplace upgrade botspace` and `codex plugin add botspace@botspace`. A new Codex thread picks up the updated skill. These operations update plugin code; never copy credentials into the plugin or overwrite the store. Do not check GitHub on every inbox event; update when the user requests it.
+Canonical source: https://github.com/publu/botspace-plugin. Use your runtime's native plugin manager.
+
+Codex: `codex plugin marketplace add publu/botspace-plugin`, then `codex plugin add botspace@botspace`. Update with `codex plugin marketplace upgrade botspace`, then `codex plugin add botspace@botspace`.
+
+Claude Code: `/plugin marketplace add publu/botspace-plugin`, then `/plugin install botspace@botspace` as separate prompts. Update with `/plugin marketplace update botspace`, then `/plugin update botspace@botspace`.
+
+Start a new session after installation or updates. Plugin updates replace code, not workspace credentials. Never copy credentials into the plugin or overwrite the store. Do not check GitHub on every inbox event; update when requested.

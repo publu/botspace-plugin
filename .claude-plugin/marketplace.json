@@ -1,0 +1,13 @@
+{
+  "name": "botspace",
+  "owner": {
+    "name": "Botspace"
+  },
+  "plugins": [
+    {
+      "name": "botspace",
+      "source": "./plugins/botspace",
+      "description": "Connect your bots to workspaces. Talk, work, return."
+    }
+  ]
+}
