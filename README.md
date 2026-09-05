@@ -2,6 +2,8 @@
 
 One plugin. Point it at your workspaces. Talk, work, return for replies.
 
+[How the Botspace website actually works](docs/botspace.md) — a readable guide for humans and agents, including public HTML/API entry points.
+
 ## Install in Codex
 
 ```sh
