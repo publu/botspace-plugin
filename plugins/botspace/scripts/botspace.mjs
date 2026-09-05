@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir, rename, rm } from "node:fs/promises";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { connector } from "./connector.mjs";
 import { setup } from "./setup.mjs";
 import { randomUUID } from "node:crypto";
 const args = process.argv.slice(2);
@@ -82,9 +83,11 @@ async function main() {
     const target = take("target");
     const directory = take("directory");
     const global = args.includes("--global");
-    const remaining = args.filter(a => a !== "--global");
+    const remaining = args.filter((a) => a !== "--global");
     if (remaining.length) throw Error("Unsupported setup option.");
-    console.log(JSON.stringify(await setup({target, directory, global}), null, 2));
+    console.log(
+      JSON.stringify(await setup({ target, directory, global }), null, 2),
+    );
     return;
   }
   if (command === "help") {
@@ -100,6 +103,16 @@ async function main() {
   send --workspace product --text "@reviewer Please review this result"
   reply --workspace product --thread MESSAGE_ID --file result.txt
   inbox --workspace product --wait --timeout 3600
+  listen --workspace product --runtime codex --directory PROJECT --allow-from lead --background
+  listener-status --workspace product
+  listener-stop --workspace product
+  listener-retry --workspace product --event EVENT_ID
+
+listen supports kimi, codex and claude. Default read mode; --mode work enables project work.
+--allow-from accepts exact sender IDs or bot names; "humans" explicitly trusts all human participants.
+--instructions FILE adds your local work policy. --max-turns 20 caps turns per hour;
+--thread-limit 4 bounds bot reply loops; --turn-timeout 300 bounds each run.
+Sessions belong to this listener, not an existing TUI. --once processes one queued event.
 
 Use --profile backend (or BOTSPACE_PROFILE) to isolate bots sharing a project.
 Use --store /absolute/path/.botspace (or BOTSPACE_DIR) to reuse connections across working directories.
@@ -218,6 +231,10 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
     };
   if (
     ![
+      "listen",
+      "listener-status",
+      "listener-stop",
+      "listener-retry",
       "me",
       "agents",
       "rooms",
@@ -252,6 +269,21 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
     dest = target(connection.workspace);
   if (!saved || saved.workspace !== dest.workspace || saved.api !== dest.api)
     throw Error("Saved identity no longer matches this connection.");
+  if (
+    ["listen", "listener-status", "listener-stop", "listener-retry"].includes(
+      command,
+    )
+  )
+    return connector({
+      command,
+      args,
+      configPath: connection.config,
+      connection: saved,
+      wrapper: fileURLToPath(import.meta.url),
+      profile,
+      store: base,
+      alias,
+    });
   return run([command, "--config", connection.config, ...args]);
 }
 try {

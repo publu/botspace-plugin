@@ -1,0 +1,141 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  handleJob,
+  allowedAuthor,
+  replyId,
+} from "../plugins/botspace/scripts/connector.mjs";
+import { runtimeCommand } from "../plugins/botspace/scripts/runtimes.mjs";
+const cfg = {
+  runtime: "codex",
+  directory: "/project",
+  mode: "read",
+  name: "worker",
+  api: "https://example.com/api/w/test",
+  agentId: "bot",
+  threadLimit: 4,
+};
+const fresh = () => ({ sessions: {}, turns: [], threadTurns: {} });
+const job = () => ({
+  status: "queued",
+  event: { id: 1, actor: "lead-id", objectId: "request" },
+});
+const thread = {
+  root: {
+    id: "request",
+    room: "general",
+    author: "lead-id",
+    body: "Review this.",
+  },
+  replies: [],
+};
+
+test("lost reply response retries the same post without rerunning tools, and acknowledges only delivery", async () => {
+  const state = fresh(),
+    j = job();
+  let runs = 0,
+    attempts = 0;
+  const posts = [],
+    acks = [];
+  const api = async (path, body) => {
+    if (path.startsWith("/threads")) return thread;
+    if (path === "/posts") {
+      posts.push(body);
+      if (++attempts === 1) throw Error("lost HTTP response");
+      return body;
+    }
+    if (path === "/ack") acks.push(body);
+  };
+  const options = {
+    job: j,
+    state,
+    config: cfg,
+    persist: async () => {},
+    api,
+    run: async ({ onSession }) => {
+      runs++;
+      await onSession("dedicated");
+      return { text: "Result ready" };
+    },
+  };
+  await assert.rejects(handleJob(options), /lost/);
+  assert.equal(j.status, "replying");
+  assert.equal(acks.length, 0);
+  await handleJob(options);
+  assert.equal(runs, 1);
+  assert.equal(j.status, "done");
+  assert.deepEqual(posts[0], posts[1]);
+  assert.deepEqual(acks, [{ ids: [1] }]);
+  assert.equal(state.sessions.request, "dedicated");
+});
+test("a model failure leaves the triggering message unacknowledged", async () => {
+  const j = job();
+  const calls = [];
+  await assert.rejects(
+    handleJob({
+      job: j,
+      state: fresh(),
+      config: cfg,
+      persist: async () => {},
+      api: async (path) => {
+        calls.push(path);
+        return thread;
+      },
+      run: async () => {
+        throw Error("interrupted");
+      },
+    }),
+    /interrupted/,
+  );
+  assert.equal(j.status, "running");
+  assert.deepEqual(calls, ["/threads/request"]);
+});
+test("sender allowlist uses verified identities and excludes untrusted names", () => {
+  const agents = [
+    { id: "lead-id", name: "lead" },
+    { id: "demo-id", name: "fake", demo: true },
+  ];
+  assert.equal(!!allowedAuthor({ actor: "stranger" }, agents, ["lead"]), false);
+  assert.equal(!!allowedAuthor({ actor: "lead-id" }, agents, ["lead"]), true);
+  assert.equal(!!allowedAuthor({ actor: "demo-id" }, agents, ["fake"]), false);
+  assert.equal(
+    !!allowedAuthor({ actor: "human-abc" }, agents, ["humans"]),
+    true,
+  );
+  assert.equal(
+    !!allowedAuthor({ actor: "human-abc" }, agents, ["lead"]),
+    false,
+  );
+});
+test("bot reply loop stops before spending another turn", async () => {
+  const state = fresh();
+  state.threadTurns.request = 4;
+  const j = job();
+  let ran = false;
+  await handleJob({
+    job: j,
+    state,
+    config: cfg,
+    persist: async () => {},
+    api: async () => thread,
+    run: async () => {
+      ran = true;
+    },
+  });
+  assert.equal(ran, false);
+  assert.equal(j.status, "blocked");
+});
+test("runtime resumes use explicit sessions, not whichever terminal was last active", () => {
+  for (const runtime of ["codex", "claude"]) {
+    const [command, args] = runtimeCommand(runtime, {
+      session: "owned-session",
+      mode: "read",
+    });
+    assert.equal(command, runtime);
+    assert.ok(args.includes("owned-session"));
+    assert.ok(!args.includes("--last"));
+    assert.ok(!args.includes("--dangerously-skip-permissions"));
+  }
+  assert.deepEqual(runtimeCommand("kimi"), ["kimi", ["acp"]]);
+  assert.notEqual(replyId("a", "b", 1), replyId("a", "c", 1));
+});
