@@ -97,6 +97,10 @@ async function main() {
   setup --target claude --global
   connect product --url https://YOUR_SITE/w/product --name backend
   connect research --url https://OTHER_SITE/w/research --name backend
+  onboard                      Inspect saved setup; let the TUI ask what is missing
+  activate --workspace product --runtime codex --directory PROJECT --allow-from lead
+  pause --workspace product
+  resume --workspace product    Reuse saved runtime, project and sender choices
   workspaces
   inbox --workspace product
   read --workspace research --room general
@@ -220,6 +224,38 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
   }
   const registry = (await read(registryPath)) || { workspaces: {} };
   const entries = Object.entries(registry.workspaces);
+  if (command === "onboard") {
+    const workspaces = await Promise.all(
+      entries.map(async ([alias, connection]) => {
+        const identity = await read(connection.config);
+        const status = identity
+          ? await connector({
+              command: "listener-status",
+              args: [],
+              configPath: connection.config,
+              connection: identity,
+            })
+          : { running: false };
+        return {
+          alias,
+          workspace: connection.workspace,
+          name: connection.name,
+          configured: !!connection.automation,
+          ...status,
+        };
+      }),
+    );
+    return {
+      profile,
+      store: base,
+      workspaces,
+      next: !entries.length
+        ? "Ask which workspace to connect, then choose a bot name with the operator. Infer the runtime and current project directory."
+        : workspaces.every((w) => w.running)
+          ? "Connected. Continue collaborating; do not repeat setup."
+          : "Reuse saved identities. Resume configured connections; for new connections ask who may send work, then activate. Keep all setup inside this conversation.",
+    };
+  }
   if (command === "workspaces")
     return {
       profile,
@@ -231,6 +267,9 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
     };
   if (
     ![
+      "activate",
+      "resume",
+      "pause",
       "listen",
       "listener-status",
       "listener-stop",
@@ -269,6 +308,71 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
     dest = target(connection.workspace);
   if (!saved || saved.workspace !== dest.workspace || saved.api !== dest.api)
     throw Error("Saved identity no longer matches this connection.");
+  if (["activate", "resume", "pause"].includes(command)) {
+    if (command === "pause")
+      return connector({
+        command: "listener-stop",
+        args: [],
+        configPath: connection.config,
+        connection: saved,
+      });
+    if (command === "resume" && args.length)
+      throw Error("resume uses saved settings; use activate to change them.");
+    const options =
+      command === "resume" ? connection.automation?.args : [...args];
+    if (!options)
+      throw Error(
+        "This connection needs first-time setup. Ask who may send work, then activate.",
+      );
+    if (options.includes("--once"))
+      throw Error(
+        "activate keeps Botspace connected; use listen --once for a single job.",
+      );
+    const status = await connector({
+      command: "listener-status",
+      args: [],
+      configPath: connection.config,
+      connection: saved,
+    });
+    if (status.running)
+      return {
+        connected: true,
+        alreadyRunning: true,
+        workspace: connection.workspace,
+      };
+    const result = await connector({
+      command: "listen",
+      args: [...options.filter((x) => x !== "--background"), "--background"],
+      configPath: connection.config,
+      connection: saved,
+      wrapper: fileURLToPath(import.meta.url),
+      profile,
+      store: base,
+      alias,
+    });
+    if (command === "activate") {
+      // Persist the exact validated choices outside the plugin so updates can resume them.
+      const lock = registryPath + ".lock";
+      await mkdir(lock);
+      try {
+        const latest = await read(registryPath);
+        if (latest.workspaces[alias]?.config !== connection.config)
+          throw Error(
+            "Connection changed while starting. Check listener-status before continuing.",
+          );
+        const normalized = options.filter((x) => x !== "--background");
+        for (const flag of ["--directory", "--instructions"]) {
+          const i = normalized.indexOf(flag);
+          if (i >= 0) normalized[i + 1] = resolve(normalized[i + 1]);
+        }
+        latest.workspaces[alias].automation = { args: normalized };
+        await save(registryPath, latest);
+      } finally {
+        await rm(lock, { recursive: true, force: true });
+      }
+    }
+    return result;
+  }
   if (
     ["listen", "listener-status", "listener-stop", "listener-retry"].includes(
       command,

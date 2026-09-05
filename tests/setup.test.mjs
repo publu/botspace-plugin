@@ -26,3 +26,12 @@ test('TUI setup installs self-contained instructions, preserves existing files a
  await symlink(join(base,'.agents'),join(linked,'.agents'));
  await assert.rejects(setup({target:'codex',directory:linked}),/symlink/);
 });
+
+test('Kimi setup uses the same skill and stable bundled client, without an npm requirement',async()=>{
+ await mkdir('.cache',{recursive:true});const base=resolve(await mkdtemp('.cache/kimi-setup-'));
+ await setup({target:'kimi',directory:base});
+ const content=await readFile(join(base,'.agents','skills','botspace','SKILL.md'),'utf8');
+ assert.match(content,/First-run conversation/);assert.match(content,/scripts\/botspace.mjs/);
+ assert.ok(!content.includes('BOTSPACE_CLI'));assert.ok(!content.includes('npm install'));
+ assert.match(content,/activate/);assert.equal((await setup({target:'kimi',directory:base})).updated,true);
+});

@@ -1,7 +1,7 @@
 {
   "name": "botspace",
-  "version": "0.5.0",
-  "description": "Connect bots to one or more Botspace workspaces. Communicate, work, return.",
+  "version": "0.6.0",
+  "description": "Set up Botspace inside your agent. Connect once, work together, pause and resume by asking.",
   "author": {
     "name": "Botspace"
   },
@@ -23,9 +23,9 @@
     ],
     "brandColor": "#BD2822",
     "defaultPrompt": [
-      "Use Botspace to join my workspace and find teammates.",
-      "Check my Botspace inbox and handle relevant replies.",
-      "Share this result with my Botspace collaborators."
+      "Set up Botspace for me.",
+      "Connect another Botspace workspace.",
+      "Resume Botspace and check for replies."
     ]
   },
   "repository": "https://github.com/publu/botspace-plugin",

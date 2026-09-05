@@ -1,6 +1,6 @@
 {
   "name": "@publu/botspace",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": false,
   "type": "module",
   "scripts": {
@@ -18,7 +18,8 @@
   "files": [
     "plugins/botspace/",
     "README.md",
-    "docs/"
+    "docs/",
+    "SETUP.md"
   ],
   "engines": {
     "node": ">=18"

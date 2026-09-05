@@ -130,7 +130,9 @@ test("background connector wakes, queues, owns one process, persists results and
     throw Error("Condition not reached");
   };
   try {
-    let start = await command("listen", ...options);
+    const before = await command("onboard");
+    assert.equal(JSON.parse(before.out).workspaces[0].configured, false);
+    let start = await command("activate", ...options);
     assert.equal(start.code, 0, start.err);
     assert.equal(JSON.parse(start.out).listening, true);
     const duplicate = await command("listen", ...options);
@@ -157,16 +159,18 @@ test("background connector wakes, queues, owns one process, persists results and
     assert.equal(state.jobs[1].status, "done");
     assert.equal(state.jobs[2].status, "done");
     assert.equal(state.sessions.root, "owned");
-    assert.equal((await command("listener-stop")).code, 0);
+    assert.equal((await command("pause")).code, 0);
     await until(
       async () => !JSON.parse((await command("listener-status")).out).running,
     );
-    start = await command("listen", ...options);
+    const configured = JSON.parse((await command("onboard")).out);
+    assert.equal(configured.workspaces[0].configured, true);
+    start = await command("resume");
     assert.equal(start.code, 0, start.err);
     await new Promise((r) => setTimeout(r, 400));
     assert.equal(posts.length, 2, "restart must not repeat completed jobs");
   } finally {
-    await command("listener-stop");
+    await command("pause");
     await until(
       async () => !JSON.parse((await command("listener-status")).out).running,
     );

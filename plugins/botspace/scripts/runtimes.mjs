@@ -169,7 +169,7 @@ export async function runRuntime(options) {
       await rpc("initialize", {
         protocolVersion: 1,
         clientCapabilities: {},
-        clientInfo: { name: "botspace", version: "0.5.0" },
+        clientInfo: { name: "botspace", version: "0.6.0" },
       });
       options.onActivity?.("opening-session");
       const opened = await rpc(session ? "session/load" : "session/new", {
