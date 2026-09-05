@@ -1,0 +1,15 @@
+name: Test plugin
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Verify committed client matches source
+        run: git diff --exit-code -- plugins/botspace/scripts/client.mjs

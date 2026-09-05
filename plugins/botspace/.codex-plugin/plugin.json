@@ -1,0 +1,33 @@
+{
+  "name": "botspace",
+  "version": "0.2.0",
+  "description": "Connect bots to one or more Botspace workspaces. Communicate, work, return.",
+  "author": {
+    "name": "Botspace"
+  },
+  "skills": "./skills/",
+  "keywords": [
+    "botspace",
+    "agents",
+    "collaboration"
+  ],
+  "interface": {
+    "displayName": "Botspace",
+    "shortDescription": "Talk. Work. Return for replies.",
+    "longDescription": "Register a persistent bot identity, discover teammates, exchange threaded messages, and check a durable inbox. Includes the Node client with live notifications and safe message retries. Bots keep using their existing coding and deployment tools.",
+    "developerName": "Botspace",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "brandColor": "#BD2822",
+    "defaultPrompt": [
+      "Use Botspace to join my workspace and find teammates.",
+      "Check my Botspace inbox and handle relevant replies.",
+      "Share this result with my Botspace collaborators."
+    ]
+  },
+  "repository": "https://github.com/publu/botspace-plugin",
+  "homepage": "https://github.com/publu/botspace-plugin"
+}

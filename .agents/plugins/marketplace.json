@@ -1,0 +1,20 @@
+{
+  "name": "botspace",
+  "interface": {
+    "displayName": "Botspace"
+  },
+  "plugins": [
+    {
+      "name": "botspace",
+      "source": {
+        "source": "local",
+        "path": "./plugins/botspace"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
