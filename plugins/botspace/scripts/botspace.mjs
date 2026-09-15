@@ -40,7 +40,7 @@ async function save(path, data) {
 async function run(argv) {
   return new Promise((done, reject) => {
     const child = spawn(process.execPath, [client, ...argv], {
-      stdio: ["inherit", "pipe", "pipe"],
+      stdio: ["ignore", "pipe", "pipe"],
     });
     let output = "",
       error = "";
@@ -62,9 +62,10 @@ async function run(argv) {
 function target(value) {
   const url = new URL(value);
   if (
-    !/^\/w\/[a-z][a-z0-9-]{2,39}\/?$/.test(url.pathname) ||
+    !/^\/w\/[a-z][a-z0-9-]{2,39}(?:\/(?:wiki|skill\.md))?\/?$/.test(
+      url.pathname,
+    ) ||
     url.search ||
-    url.hash ||
     url.username ||
     url.password ||
     !["http:", "https:"].includes(url.protocol)
@@ -75,8 +76,12 @@ function target(value) {
     !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
   )
     throw Error("Remote workspaces require HTTPS.");
-  const workspace = url.origin + url.pathname.replace(/\/$/, "");
-  return { workspace, api: workspace.replace("/w/", "/api/w/") };
+  const workspace = url.origin + "/w/" + url.pathname.split("/")[2];
+  return {
+    workspace,
+    api: workspace.replace("/w/", "/api/w/"),
+    invite: new URLSearchParams(url.hash.slice(1)).get("invite"),
+  };
 }
 async function main() {
   if (command === "setup") {
@@ -106,7 +111,10 @@ async function main() {
   read --workspace research --room general
   send --workspace product --text "@reviewer Please review this result"
   reply --workspace product --thread MESSAGE_ID --file result.txt
-  inbox --workspace product --wait --timeout 3600
+  mcp-config --workspace product  Print optional MCP config using this saved identity
+  context --workspace product
+  pages --workspace product
+  tasks --workspace product
   listen --workspace product --runtime codex --directory PROJECT --allow-from lead --background
   listener-status --workspace product
   listener-stop --workspace product
@@ -116,21 +124,30 @@ listen supports kimi, codex and claude. Default read mode; --mode work enables p
 --allow-from accepts exact sender IDs or bot names; "humans" explicitly trusts all human participants.
 --instructions FILE adds your local work policy. --max-turns 20 caps turns per hour;
 --thread-limit 4 bounds bot reply loops; --turn-timeout 300 bounds each run.
-Sessions belong to this listener, not an existing TUI. --once processes one queued event.
+Listeners start in the background by default and return promptly.
+Sessions belong to the listener, not an existing TUI. --foreground is for a dedicated worker only.
+--once processes one queued event. inbox always returns immediately in the TUI.
 
 Use --profile backend (or BOTSPACE_PROFILE) to isolate bots sharing a project.
 Use --store /absolute/path/.botspace (or BOTSPACE_DIR) to reuse connections across working directories.
-Private connect: add --invite-file /path/to/private-invitation.txt.
+Private connect accepts the full invitation in --url, or --link-file FILE.
+Token-only invitations remain supported with --invite-file FILE.
 Reuse an existing identity: connect ALIAS --url URL --config /path/to/existing.json.
 With multiple workspaces, --workspace ALIAS is required on every action.
-All client commands are supported: me, agents, rooms, join, leave, read, thread,
-send, reply, retry, inbox, events, ack, status. Tokens never appear in output.
+Shared data: context, pages, page, search, write, changes, tasks, task-create, claim,
+task-status, checkpoint, export. Use client help for their named arguments.
+Chat commands: me, agents, rooms, join, leave, read, thread, send, reply, retry, inbox, events, ack, status. Tokens never appear in output.
 Connections are stored outside the plugin. Updates preserve identities and pending sends.`);
     return;
   }
   if (command === "connect") {
     const alias = args.shift(),
-      url = take("url"),
+      linkFile = take("link-file"),
+      url =
+        take("url") ||
+        (linkFile
+          ? (await readFile(resolve(linkFile), "utf8")).trim()
+          : undefined),
       name = take("name"),
       imported = take("config");
     if (!alias || !/^[a-z][a-z0-9-]{1,39}$/.test(alias) || !url)
@@ -167,6 +184,7 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
         );
       throw e;
     }
+    let inviteFile;
     try {
       const registry = (await read(registryPath)) || { workspaces: {} };
       const old = Object.hasOwn(registry.workspaces, alias)
@@ -195,6 +213,13 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
         throw Error("Saved credential does not match this workspace.");
       const botName = name || saved?.name;
       if (!botName) throw Error("Supply --name for a new identity.");
+      if (!saved && dest.invite) {
+        if (args.includes("--invite-file"))
+          throw Error("Choose an invitation link or --invite-file.");
+        inviteFile = join(base, ".invite-" + randomUUID());
+        await writeFile(inviteFile, dest.invite, { mode: 0o600, flag: "wx" });
+        args.push("--invite-file", inviteFile);
+      }
       const result = await run([
         "register",
         "--workspace",
@@ -219,6 +244,7 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
         reused: !!result.reused,
       };
     } finally {
+      if (inviteFile) await rm(inviteFile, { force: true });
       await rm(lock, { recursive: true, force: true });
     }
   }
@@ -267,6 +293,19 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
     };
   if (
     ![
+      "mcp-config",
+      "context",
+      "pages",
+      "page",
+      "search",
+      "write",
+      "changes",
+      "tasks",
+      "task-create",
+      "claim",
+      "task-status",
+      "checkpoint",
+      "export",
       "activate",
       "resume",
       "pause",
@@ -308,6 +347,22 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
     dest = target(connection.workspace);
   if (!saved || saved.workspace !== dest.workspace || saved.api !== dest.api)
     throw Error("Saved identity no longer matches this connection.");
+  if (command === "mcp-config") {
+    if (args.length)
+      throw Error("mcp-config takes only workspace/profile/store selectors.");
+    return {
+      mcpServers: {
+        botspace: {
+          command: process.execPath,
+          args: [
+            join(dirname(fileURLToPath(import.meta.url)), "swarm-mcp.mjs"),
+            "--config",
+            connection.config,
+          ],
+        },
+      },
+    };
+  }
   if (["activate", "resume", "pause"].includes(command)) {
     if (command === "pause")
       return connector({
@@ -324,7 +379,7 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
       throw Error(
         "This connection needs first-time setup. Ask who may send work, then activate.",
       );
-    if (options.includes("--once"))
+    if (options.includes("--once") || options.includes("--foreground"))
       throw Error(
         "activate keeps Botspace connected; use listen --once for a single job.",
       );
@@ -338,6 +393,8 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
       return {
         connected: true,
         alreadyRunning: true,
+        ready: status.ready,
+        phase: status.phase,
         workspace: connection.workspace,
       };
     const result = await connector({
@@ -388,6 +445,10 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
       store: base,
       alias,
     });
+  if (command === "inbox" && args.includes("--wait"))
+    throw Error(
+      "inbox returns immediately in the TUI. Use activate/resume for background replies, or the low-level client from a dedicated worker.",
+    );
   return run([command, "--config", connection.config, ...args]);
 }
 try {

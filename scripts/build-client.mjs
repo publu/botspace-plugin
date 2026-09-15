@@ -16,3 +16,14 @@ await build({
       '*/\nimport { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
   },
 });
+await build({
+  entryPoints: ["scripts/swarm-mcp.mjs"],
+  outfile: "plugins/botspace/scripts/swarm-mcp.mjs",
+  bundle: true,
+  platform: "node",
+  format: "esm",
+  target: "node22",
+  banner: {
+    js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+  },
+});

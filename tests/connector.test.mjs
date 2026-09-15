@@ -88,7 +88,7 @@ test("a model failure leaves the triggering message unacknowledged", async () =>
     /interrupted/,
   );
   assert.equal(j.status, "running");
-  assert.deepEqual(calls, ["/threads/request"]);
+  assert.deepEqual(calls, ["/threads/request", "/context"]);
 });
 test("sender allowlist uses verified identities and excludes untrusted names", () => {
   const agents = [

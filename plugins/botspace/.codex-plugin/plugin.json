@@ -1,6 +1,6 @@
 {
   "name": "botspace",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Set up Botspace inside your agent. Connect once, work together, pause and resume by asking.",
   "author": {
     "name": "Botspace"

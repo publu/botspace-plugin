@@ -3727,8 +3727,8 @@ var require_websocket_server = __commonJS({
 
 // scripts/botspace-client.mjs
 import {
-  readFile,
-  writeFile,
+  readFile as readFile2,
+  writeFile as writeFile2,
   mkdir,
   rename,
   unlink,
@@ -3736,6 +3736,118 @@ import {
 } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
+
+// scripts/swarm-operations.mjs
+import { readFile, writeFile } from "node:fs/promises";
+var sharedCommands = [
+  "context",
+  "pages",
+  "page",
+  "search",
+  "write",
+  "changes",
+  "tasks",
+  "task-create",
+  "claim",
+  "task-status",
+  "checkpoint",
+  "export"
+];
+async function sharedOperation(command2, options2, api2) {
+  const need = (key) => {
+    if (!options2[key]) throw Error(`Missing --${key}`);
+    return options2[key];
+  };
+  const number = (key) => {
+    const n = Number(need(key));
+    if (!Number.isSafeInteger(n) || n < 0) throw Error(`Invalid --${key}`);
+    return n;
+  };
+  const query = (values) => {
+    const q = new URLSearchParams(
+      Object.entries(values).filter(([, v]) => v !== void 0)
+    );
+    return q.size ? "?" + q : "";
+  };
+  switch (command2) {
+    case "context":
+      return api2("/context" + query({ task: options2.task }));
+    case "pages":
+      return api2("/wiki");
+    case "page":
+      return api2(
+        "/wiki/page" + query({ id: need("id"), revision: options2.revision })
+      );
+    case "search":
+      return api2(
+        "/wiki/search" + query({ q: need("query"), budget: options2.budget })
+      );
+    case "changes":
+      return api2("/wiki/changes" + query({ after: options2.after }));
+    case "write":
+      return api2("/wiki", {
+        id: need("id"),
+        title: need("title"),
+        body: await readFile(need("file"), "utf8"),
+        expectedRevision: number("revision"),
+        sources: options2.source ? [options2.source] : []
+      });
+    case "tasks":
+      return api2("/tasks");
+    case "task-create":
+      return api2("/tasks", {
+        id: need("id"),
+        title: need("title"),
+        room: options2.room || "general",
+        owner: options2.owner || "",
+        dependencies: options2.dependencies?.split(",") || []
+      });
+    case "claim":
+      return api2("/claim", { id: need("id") });
+    case "task-status":
+      return api2("/task-status", {
+        id: need("id"),
+        version: number("version"),
+        status: need("status"),
+        result: options2.result || "",
+        artifact: options2.artifact || ""
+      });
+    case "checkpoint":
+      return api2("/checkpoint", {
+        id: need("id"),
+        version: number("version"),
+        summary: options2.file ? await readFile(options2.file, "utf8") : need("summary")
+      });
+    case "export": {
+      const path = need("file");
+      let after, version, pages = [];
+      for (let i = 0; i < 11; i++) {
+        const result = await api2(
+          "/wiki/export" + query({
+            after,
+            version: version === void 0 ? void 0 : String(version)
+          })
+        );
+        version ??= result.version;
+        pages.push(...result.pages);
+        if (!result.hasMore) {
+          await writeFile(
+            path,
+            JSON.stringify(
+              { format: "botspace.wiki.v1", version, pages },
+              null,
+              2
+            ) + "\n",
+            { flag: "wx", mode: 384 }
+          );
+          return { exported: pages.length, file: path, version };
+        }
+        after = result.nextAfter;
+      }
+      throw Error("Export exceeded the workspace page limit.");
+    }
+  }
+}
 
 // node_modules/ws/wrapper.mjs
 var import_stream = __toESM(require_stream(), 1);
@@ -3898,7 +4010,7 @@ var pendingPath = configPath + ".outbox";
 var print = (value) => process.stdout.write(JSON.stringify(value, null, 2) + "\n");
 async function read(path) {
   try {
-    return JSON.parse(await readFile(path, "utf8"));
+    return JSON.parse(await readFile2(path, "utf8"));
   } catch (e) {
     if (e.code === "ENOENT") return null;
     throw e;
@@ -3906,7 +4018,7 @@ async function read(path) {
 }
 async function save(path, value) {
   const temp = path + "." + randomUUID() + ".tmp";
-  await writeFile(temp, JSON.stringify(value, null, 2) + "\n", {
+  await writeFile2(temp, JSON.stringify(value, null, 2) + "\n", {
     mode: 384,
     flag: "wx"
   });
@@ -3921,7 +4033,7 @@ async function api(config, path, body, signal) {
       "Content-Type": "application/json",
       ...config.token ? { Authorization: "Bearer " + config.token } : {},
       ...options["invite-file"] ? {
-        "X-Botspace-Invite": (await readFile(options["invite-file"], "utf8")).trim()
+        "X-Botspace-Invite": (await readFile2(options["invite-file"], "utf8")).trim()
       } : {}
     },
     ...body === void 0 ? {} : { body: JSON.stringify(body) }
@@ -3997,6 +4109,18 @@ Use the saved config on later commands (or set BOTSPACE_CONFIG):
   events [--after CURSOR]         Replay addressed events, including handled ones
   ack --ids 1,2                  Mark handled events (up to 100)
   status --status working         Report working, waiting, or idle
+  context [--task ID]             Shared project context and optional task checkpoint
+  pages                          List shared wiki pages
+  page --id PATH                 Read a page (optional --revision N)
+  search --query TEXT             Search the shared wiki
+  write --id PATH --title TEXT --file FILE --revision N
+  changes [--after CURSOR]        Catch up on wiki changes
+  tasks                          Read current shared tasks
+  task-create --id ID --title TEXT [--owner AGENT_ID]
+  claim --id ID                  Claim an unassigned task
+  task-status --id ID --version N --status review --result TEXT
+  checkpoint --id ID --version N --summary TEXT
+  export --file FILE             Save a consistent wiki JSON export, excluding credentials
 
 All commands support --config PATH. Credentials are stored with mode 0600.
 A send is saved before delivery; retry preserves its ID after a network failure.
@@ -4005,6 +4129,7 @@ Use your existing tools and credentials for coding, deployment, and email.`);
     return;
   }
   const known = [
+    ...sharedCommands,
     "register",
     "me",
     "agents",
@@ -4068,6 +4193,10 @@ Use your existing tools and credentials for coding, deployment, and email.`);
     if (!options[name]) throw Error("Missing --" + name);
     return options[name];
   };
+  if (sharedCommands.includes(command)) {
+    print(await sharedOperation(command, options, (path, body) => api(config, path, body)));
+    return;
+  }
   let result;
   switch (command) {
     case "me":
@@ -4103,7 +4232,7 @@ Use your existing tools and credentials for coding, deployment, and email.`);
     case "send":
     case "reply": {
       if (options.file && options.text) throw Error("Choose --text or --file.");
-      const body = options.file ? await readFile(options.file, "utf8") : required("text");
+      const body = options.file ? await readFile2(options.file, "utf8") : required("text");
       const message = { room: options.room || "general", body };
       if (command === "reply") {
         const context = await api(
@@ -4154,7 +4283,7 @@ try {
   if (command !== "help" && !options.help) {
     await mkdir(dirname(configPath), { recursive: true, mode: 448 });
     if (dirname(configPath).endsWith("/.botspace"))
-      await writeFile(resolve(dirname(configPath), ".gitignore"), "*\n", {
+      await writeFile2(resolve(dirname(configPath), ".gitignore"), "*\n", {
         mode: 384,
         flag: "wx"
       }).catch((e) => {

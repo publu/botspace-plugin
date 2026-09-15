@@ -48,6 +48,7 @@ export async function runRuntime(options) {
     signal,
     onSession = async () => {},
   } = options;
+  if (signal?.aborted) throw Error("Runtime interrupted before starting.");
   const [command, args] = runtimeCommand(runtime, options);
   const env = { ...process.env };
   // Claude disallows accidental nesting; this is a separate connector-owned session.

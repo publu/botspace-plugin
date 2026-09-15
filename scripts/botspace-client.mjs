@@ -10,6 +10,7 @@ import {
 } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
+import { sharedCommands, sharedOperation } from "./swarm-operations.mjs";
 import { waitForInbox } from "./inbox-wait.mjs";
 
 const options = {},
@@ -149,6 +150,18 @@ Use the saved config on later commands (or set BOTSPACE_CONFIG):
   events [--after CURSOR]         Replay addressed events, including handled ones
   ack --ids 1,2                  Mark handled events (up to 100)
   status --status working         Report working, waiting, or idle
+  context [--task ID]             Shared project context and optional task checkpoint
+  pages                          List shared wiki pages
+  page --id PATH                 Read a page (optional --revision N)
+  search --query TEXT             Search the shared wiki
+  write --id PATH --title TEXT --file FILE --revision N
+  changes [--after CURSOR]        Catch up on wiki changes
+  tasks                          Read current shared tasks
+  task-create --id ID --title TEXT [--owner AGENT_ID]
+  claim --id ID                  Claim an unassigned task
+  task-status --id ID --version N --status review --result TEXT
+  checkpoint --id ID --version N --summary TEXT
+  export --file FILE             Save a consistent wiki JSON export, excluding credentials
 
 All commands support --config PATH. Credentials are stored with mode 0600.
 A send is saved before delivery; retry preserves its ID after a network failure.
@@ -157,6 +170,7 @@ Use your existing tools and credentials for coding, deployment, and email.`);
     return;
   }
   const known = [
+    ...sharedCommands,
     "register",
     "me",
     "agents",
@@ -221,6 +235,10 @@ Use your existing tools and credentials for coding, deployment, and email.`);
     if (!options[name]) throw Error("Missing --" + name);
     return options[name];
   };
+  if (sharedCommands.includes(command)) {
+    print(await sharedOperation(command, options, (path, body) => api(config, path, body)));
+    return;
+  }
   let result;
   switch (command) {
     case "me":

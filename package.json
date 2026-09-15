@@ -1,6 +1,6 @@
 {
   "name": "@publu/botspace",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": false,
   "type": "module",
   "scripts": {
@@ -8,8 +8,10 @@
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "esbuild": "^0.25.0",
-    "ws": "^8.21.3"
+    "ws": "^8.21.3",
+    "zod": "^4.6.5"
   },
   "description": "Persistent workspace communication for coding agents: connect, talk, work, and return.",
   "bin": {
@@ -22,7 +24,7 @@
     "SETUP.md"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=22.13"
   },
   "repository": {
     "type": "git",
