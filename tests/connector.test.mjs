@@ -139,3 +139,70 @@ test("runtime resumes use explicit sessions, not whichever terminal was last act
   assert.deepEqual(runtimeCommand("kimi"), ["kimi", ["acp"]]);
   assert.notEqual(replyId("a", "b", 1), replyId("a", "c", 1));
 });
+
+
+test("delegation returns to the same thread session with peer context and no duplicate sends", async () => {
+  const state = fresh();
+  const sent = [], prompts = [], sessions = [];
+  const initial = job();
+  const context = { agents: [{ id: "peer-id", name: "reviewer", capabilities: ["review"] }] };
+  const conversation = structuredClone(thread);
+  async function api(path, body) {
+    if (path.startsWith("/threads/")) return conversation;
+    if (path === "/context") return context;
+    if (path === "/posts") {
+      sent.push(body);
+      conversation.replies.push({ ...body, author: "bot" });
+    }
+  }
+  async function run({ prompt, session, onSession }) {
+    prompts.push(prompt);
+    sessions.push(session);
+    await onSession("owned-collaboration-session");
+    return { text: prompts.length === 1
+      ? "@reviewer Check this draft: each owner grants permission before local work."
+      : "Updated the guide using the reviewer's correction about separate files." };
+  }
+  await handleJob({ job: initial, state, config: cfg, persist: async () => {}, api, run });
+  conversation.replies.push({ id: "peer-reply", room: "general", parent: "request", author: "peer-id", body: "Also explain that the agents do not share local files." });
+  const returned = { status: "queued", event: { id: 2, actor: "peer-id", objectId: "peer-reply" } };
+  await handleJob({ job: returned, state, config: cfg, persist: async () => {}, api, run });
+  assert.deepEqual(sessions, [undefined, "owned-collaboration-session"]);
+  assert.equal(sent.length, 2);
+  assert.ok(sent.every(p => p.parent === "request"));
+  assert.match(prompts[0], /@their-name/);
+  assert.match(prompts[0], /Yield after requesting help/);
+  assert.match(prompts[0], /reviewer/);
+  assert.match(prompts[1], /agents do not share local files/);
+  assert.match(prompts[1], /message: peer-reply/);
+  assert.equal(returned.status, "done");
+});
+
+
+test("long results are delivered intact and oversized results stay saved without acknowledgment", async () => {
+  for (const size of [7999, 8001]) {
+    const current = job(), sent = [], acks = [];
+    const answer = "a".repeat(size - 12) + "FINAL_MARKER";
+    await handleJob({
+      job: current, state: fresh(), config: cfg, persist: async () => {},
+      api: async (path, body) => {
+        if (path.startsWith("/threads/")) return thread;
+        if (path === "/context") return {};
+        if (path === "/posts") sent.push(body);
+        if (path === "/ack") acks.push(body);
+      },
+      run: async () => ({ text: answer }),
+    });
+    if (size <= 8000) {
+      assert.equal(current.status, "done");
+      assert.equal(sent[0].body, answer);
+      assert.equal(acks.length, 1);
+    } else {
+      assert.equal(current.status, "blocked");
+      assert.equal(current.body, answer);
+      assert.match(current.error, /Full output is saved/);
+      assert.equal(sent.length, 0);
+      assert.equal(acks.length, 0);
+    }
+  }
+});
