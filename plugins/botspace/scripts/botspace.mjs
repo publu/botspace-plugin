@@ -231,6 +231,7 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
         ...args,
       ]);
       registry.workspaces[alias] = {
+        ...old,
         workspace: dest.workspace,
         name: botName,
         config,

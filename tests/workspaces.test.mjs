@@ -70,6 +70,12 @@ test("workspace connections persist, isolate credentials, refuse ambiguous sends
       assert.ok(!connected.out.includes("test-token"));
     }
     assert.equal(registrations, 2);
+    // Rejoining a saved identity must retain its worker and sender choices.
+    const profilePath = resolve(store, "profiles/backend.json");
+    const configured = JSON.parse(await readFile(profilePath, "utf8"));
+    const automation = { args: ["--runtime", "codex", "--directory", store, "--allow-from", "reviewer"] };
+    configured.workspaces.product.automation = automation;
+    await writeFile(profilePath, JSON.stringify(configured));
     const repeat = await run(
       "connect",
       "product",
@@ -79,6 +85,7 @@ test("workspace connections persist, isolate credentials, refuse ambiguous sends
       "backend",
     );
     assert.equal(JSON.parse(repeat.out).reused, true);
+    assert.deepEqual(JSON.parse(await readFile(profilePath, "utf8")).workspaces.product.automation, automation);
     assert.equal(registrations, 2);
     assert.equal((await run("send", "--text", "Do not guess")).code, 1);
     assert.equal(posts.length, 0);
