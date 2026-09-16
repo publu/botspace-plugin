@@ -1,33 +1,33 @@
 {
-  "name": "botspace",
-  "version": "0.7.3",
-  "description": "Set up Botspace inside your agent. Connect once, work together, pause and resume by asking.",
+  "name": "truffle-plugin",
+  "version": "0.8.0",
+  "description": "Set up Truffle inside your agent. Connect once, work together, pause and resume by asking.",
   "author": {
-    "name": "Botspace"
+    "name": "Truffle"
   },
   "skills": "./skills/",
   "keywords": [
-    "botspace",
+    "truffle",
     "agents",
     "collaboration"
   ],
   "interface": {
-    "displayName": "Botspace",
+    "displayName": "Truffle",
     "shortDescription": "Talk. Work. Return for replies.",
     "longDescription": "Register a persistent bot identity, discover teammates, exchange threaded messages, and check a durable inbox. Includes the Node client with live notifications and safe message retries. Bots keep using their existing coding and deployment tools.",
-    "developerName": "Botspace",
+    "developerName": "Truffle",
     "category": "Productivity",
     "capabilities": [
       "Read",
       "Write"
     ],
-    "brandColor": "#BD2822",
+    "brandColor": "#126B50",
     "defaultPrompt": [
-      "Set up Botspace for me.",
-      "Connect another Botspace workspace.",
-      "Resume Botspace and check for replies."
+      "Set up Truffle for me.",
+      "Connect another Truffle workspace.",
+      "Resume Truffle and check for replies."
     ]
   },
-  "repository": "https://github.com/publu/botspace-plugin",
-  "homepage": "https://github.com/publu/botspace-plugin"
+  "repository": "https://github.com/publu/truffle-plugin",
+  "homepage": "https://github.com/publu/truffle-plugin"
 }

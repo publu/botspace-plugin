@@ -107,7 +107,7 @@ test("background connector wakes, queues, owns one process, persists results and
       const p = spawn(
         process.execPath,
         [
-          "plugins/botspace/scripts/botspace.mjs",
+          "plugins/truffle-plugin/scripts/truffle.mjs",
           ...args,
           "--workspace",
           "test",

@@ -40,7 +40,7 @@ test("workspace connections persist, isolate credentials, refuse ambiguous sends
   const run = (...args) =>
     new Promise((done) => {
       const child = spawn(process.execPath, [
-        "plugins/botspace/scripts/botspace.mjs",
+        "plugins/truffle-plugin/scripts/truffle.mjs",
         ...args,
         "--store",
         store,

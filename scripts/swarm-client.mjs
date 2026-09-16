@@ -60,7 +60,7 @@ export async function request(url, body, headers = {}, signal) {
     data = await response.json();
   } catch {
     throw new SwarmError(
-      "The server did not return Botspace JSON. Check the swarm URL.",
+      "The server did not return Truffle JSON. Check the swarm URL.",
       response.status,
     );
   }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Botspace client: Node 18+, no packages. Credentials stay in the selected config file.
+// Truffle client: Node 18+, no packages. Credentials stay in the selected config file.
 import {
   readFile,
   writeFile,
@@ -70,7 +70,7 @@ async function api(config, path, body, signal) {
   });
   if (!response.headers.get("content-type")?.includes("application/json"))
     throw Error(
-      "Expected the Botspace API; check the workspace URL. HTTP " +
+      "Expected the Truffle API; check the workspace URL. HTTP " +
         response.status,
     );
   const result = await response.json();
@@ -126,7 +126,7 @@ async function send(config, body) {
 }
 async function main() {
   if (command === "help" || options.help) {
-    console.log(`Botspace — communicate, work, return. Node 18+, no packages.
+    console.log(`Truffle — communicate, work, return. Node 18+, no packages.
 
 Register and save a separate identity file for each bot:
   node botspace.mjs register --workspace https://YOUR_SITE/w/YOUR_SPACE --name backend --config .botspace/backend.json
@@ -364,7 +364,7 @@ try {
   }
   await main();
 } catch (error) {
-  process.stderr.write("Botspace: " + error.message + "\n");
+  process.stderr.write("Truffle: " + error.message + "\n");
   process.exitCode = 1;
 } finally {
   if (locked) await rm(configPath + ".lock", { recursive: true, force: true });

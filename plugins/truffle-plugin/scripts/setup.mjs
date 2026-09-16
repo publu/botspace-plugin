@@ -36,7 +36,7 @@ export async function setup({ target, directory, global = false }) {
     existing = await readFile(destination, "utf8");
     if (!existing.includes(marker))
       throw Error(
-        "An unmanaged Botspace skill already exists; it has been left untouched.",
+        "An unmanaged Truffle skill already exists; it has been left untouched.",
       );
   } catch (e) {
     if (e.code !== "ENOENT") throw e;
@@ -50,7 +50,7 @@ export async function setup({ target, directory, global = false }) {
     .replace("name: collaborate", "name: botspace")
     .replace(
       /The bundled client is[^\n]+/,
-      "The Botspace CLI is installed with npm. Run `botspace help` to check availability. Node.js 18+ is required.",
+      "The Truffle CLI is installed with npm. Run `botspace help` to check availability. Node.js 22.13+ is required.",
     )
     .replaceAll('node "$BOTSPACE_CLI"', "botspace");
   if (target === "kimi") {
@@ -61,7 +61,7 @@ export async function setup({ target, directory, global = false }) {
       .replace("name: collaborate", "name: botspace")
       .replace(
         /The bundled client is[^\n]+/,
-        "The bundled client is available in the stable GitHub checkout. Use the absolute command below; Node.js 18+ is required.",
+        "The bundled client is available in the stable GitHub checkout. Use the absolute command below; Node.js 22.13+ is required.",
       )
       .replaceAll('node "$BOTSPACE_CLI"', "node " + quoted)
       .replaceAll("BOTSPACE_CLI", "the bundled client");
@@ -70,12 +70,12 @@ export async function setup({ target, directory, global = false }) {
   if (section >= 0) content = content.slice(0, section);
   if (target === "kimi")
     content +=
-      "\n## Install and update\n\nSource: https://github.com/publu/botspace-plugin. Update the stable checkout with git pull --ff-only, rerun this setup command, then pause and resume configured workspaces using the updated client. Keep workspace credentials and saved settings.\n\n" +
+      "\n## Install and update\n\nSource: https://github.com/publu/truffle-plugin. Update the stable checkout with git pull --ff-only, rerun this setup command, then pause and resume configured workspaces using the updated client. Keep workspace credentials and saved settings.\n\n" +
       marker +
       "\n";
   else
     content +=
-      "\n## Install and update\n\nSource: https://github.com/publu/botspace-plugin. Update with `npm install -g https://github.com/publu/botspace-plugin/releases/latest/download/botspace.tgz`, then rerun the same `botspace setup` command. Workspace credentials and pending sends remain in the private store.\n\n" +
+      "\n## Install and update\n\nSource: https://github.com/publu/truffle-plugin. Update with `npm install -g https://github.com/publu/truffle-plugin/releases/latest/download/botspace.tgz`, then rerun the same `botspace setup` command. Workspace credentials and pending sends remain in the private store.\n\n" +
       marker +
       "\n";
   await mkdir(current, { recursive: true });
@@ -87,6 +87,6 @@ export async function setup({ target, directory, global = false }) {
     scope: global ? "global" : "project",
     installed: true,
     updated: !!existing,
-    next: "Start a new agent session and ask it to use Botspace with your workspace URL. Credentials and other agent settings were preserved.",
+    next: "Start a new agent session and ask it to use Truffle with your workspace URL. Credentials and other agent settings were preserved.",
   };
 }

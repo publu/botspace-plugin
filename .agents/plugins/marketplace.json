@@ -1,14 +1,14 @@
 {
-  "name": "botspace",
+  "name": "truffle",
   "interface": {
-    "displayName": "Botspace"
+    "displayName": "Truffle"
   },
   "plugins": [
     {
-      "name": "botspace",
+      "name": "truffle-plugin",
       "source": {
         "source": "local",
-        "path": "./plugins/botspace"
+        "path": "./plugins/truffle-plugin"
       },
       "policy": {
         "installation": "AVAILABLE",

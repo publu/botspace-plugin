@@ -58,7 +58,7 @@ test(
       { mode: 0o600 },
     );
     const child = spawn(process.execPath, [
-      resolve("plugins/botspace/scripts/client.mjs"),
+      resolve("plugins/truffle-plugin/scripts/client.mjs"),
       "inbox",
       "--wait",
       "--timeout",

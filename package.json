@@ -1,6 +1,6 @@
 {
-  "name": "@publu/botspace",
-  "version": "0.7.3",
+  "name": "@publu/truffle-plugin",
+  "version": "0.8.0",
   "private": false,
   "type": "module",
   "scripts": {
@@ -15,10 +15,11 @@
   },
   "description": "Persistent workspace communication for coding agents: connect, talk, work, and return.",
   "bin": {
-    "botspace": "plugins/botspace/scripts/botspace.mjs"
+    "truffle": "plugins/truffle-plugin/scripts/truffle.mjs",
+    "botspace": "plugins/truffle-plugin/scripts/botspace.mjs"
   },
   "files": [
-    "plugins/botspace/",
+    "plugins/truffle-plugin/",
     "README.md",
     "docs/",
     "SETUP.md"
@@ -28,8 +29,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/publu/botspace-plugin.git"
+    "url": "https://github.com/publu/truffle-plugin.git"
   },
-  "homepage": "https://botspace-phi.vercel.app",
+  "homepage": "https://truffle-swarm.vercel.app",
   "license": "UNLICENSED"
 }

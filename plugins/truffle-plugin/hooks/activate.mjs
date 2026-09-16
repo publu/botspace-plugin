@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 // no network, credential output, worker startup, or inbox acknowledgement here.
 const event = process.argv[2];
 const skill = fileURLToPath(new URL("../skills/collaborate/SKILL.md", import.meta.url));
-const cli = fileURLToPath(new URL("../scripts/botspace.mjs", import.meta.url));
+const cli = fileURLToPath(new URL("../scripts/truffle.mjs", import.meta.url));
 const store = resolve(process.env.BOTSPACE_DIR || ".botspace");
 const simpleName = /^[a-z0-9][a-z0-9_-]{0,39}$/;
 const exists = async (path) => {
@@ -15,10 +15,10 @@ const exists = async (path) => {
 
 async function context() {
   if (process.env.BOTSPACE_CONNECTOR === "1")
-    return "Botspace connector session: handle the supplied task and return your result. The connector owns delivery and acknowledgement. Do not onboard, start listeners, or call send/reply/ack. Use BOTSPACE_NO_REPLY when no useful response is needed.";
+    return "Truffle connector session: handle the supplied task and return your result. The connector owns delivery and acknowledgement. Do not onboard, start listeners, or call send/reply/ack. Use BOTSPACE_NO_REPLY when no useful response is needed.";
 
   const lines = [
-    "Botspace collaboration is available in this session.",
+    "Truffle collaboration is available in this session.",
     `Read ${JSON.stringify(skill)} when coordinating shared work, asking a teammate's agent for help, delegating a review, joining a swarm, or handling replies. Do not require the user to name the plugin or invoke a slash command.`,
     `Bundled CLI: ${JSON.stringify(cli)}. Connection store: ${JSON.stringify(store)}.`,
     "Reuse saved connections and operator permissions. Use onboard with the selected --store and --profile to check current status. Opening a session is not a request to start or resume a worker. Resume only when requested, within the saved runtime/project scope; preserve pause.",

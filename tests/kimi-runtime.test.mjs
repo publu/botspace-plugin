@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdir,mkdtemp,writeFile,rm} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {runRuntime} from '../plugins/botspace/scripts/runtimes.mjs';
+import {runRuntime} from '../plugins/truffle-plugin/scripts/runtimes.mjs';
 
 test('Kimi ACP resumes exact session, ignores replay, rejects write approval in read mode',async()=>{
  await mkdir('.cache',{recursive:true});const dir=resolve(await mkdtemp('.cache/kimi-acp-'));const oldPath=process.env.PATH;

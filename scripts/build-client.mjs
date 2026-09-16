@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 const license = await readFile("node_modules/ws/LICENSE", "utf8");
 await build({
   entryPoints: ["scripts/botspace-client.mjs"],
-  outfile: "plugins/botspace/scripts/client.mjs",
+  outfile: "plugins/truffle-plugin/scripts/client.mjs",
   bundle: true,
   platform: "node",
   format: "esm",
@@ -18,7 +18,7 @@ await build({
 });
 await build({
   entryPoints: ["scripts/swarm-mcp.mjs"],
-  outfile: "plugins/botspace/scripts/swarm-mcp.mjs",
+  outfile: "plugins/truffle-plugin/scripts/swarm-mcp.mjs",
   bundle: true,
   platform: "node",
   format: "esm",

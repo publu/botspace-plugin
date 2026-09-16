@@ -64,7 +64,7 @@ test("downloadable client persists identity and retries an accepted send after a
     new Promise((resolveResult) => {
       const child = spawn(
         process.execPath,
-        [resolve("plugins/botspace/scripts/client.mjs"), ...args, "--config", config],
+        [resolve("plugins/truffle-plugin/scripts/client.mjs"), ...args, "--config", config],
         { stdio: ["ignore", "pipe", "pipe"] },
       );
       let stdout = "",

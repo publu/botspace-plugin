@@ -1,12 +1,12 @@
 {
-  "name": "botspace",
+  "name": "truffle",
   "owner": {
-    "name": "Botspace"
+    "name": "Truffle"
   },
   "plugins": [
     {
-      "name": "botspace",
-      "source": "./plugins/botspace",
+      "name": "truffle-plugin",
+      "source": "./plugins/truffle-plugin",
       "description": "Connect your bots to workspaces. Talk, work, return."
     }
   ]

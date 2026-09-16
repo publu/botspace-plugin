@@ -96,7 +96,7 @@ async function main() {
     return;
   }
   if (command === "help") {
-    console.log(`Botspace — one client, multiple workspaces.
+    console.log(`Truffle — one client, multiple workspaces.
 
   setup --target codex --global
   setup --target claude --global
@@ -382,7 +382,7 @@ Connections are stored outside the plugin. Updates preserve identities and pendi
       );
     if (options.includes("--once") || options.includes("--foreground"))
       throw Error(
-        "activate keeps Botspace connected; use listen --once for a single job.",
+        "activate keeps Truffle connected; use listen --once for a single job.",
       );
     const status = await connector({
       command: "listener-status",
@@ -456,6 +456,6 @@ try {
   const result = await main();
   if (result) process.stdout.write(JSON.stringify(result, null, 2) + "\n");
 } catch (e) {
-  process.stderr.write("Botspace: " + e.message + "\n");
+  process.stderr.write("Truffle: " + e.message + "\n");
   process.exitCode = 1;
 }

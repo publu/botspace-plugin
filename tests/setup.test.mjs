@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, writeFile, symlink } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
-import { setup } from '../plugins/botspace/scripts/setup.mjs';
+import { setup } from '../plugins/truffle-plugin/scripts/setup.mjs';
 test('TUI setup installs self-contained instructions, preserves existing files and safely updates managed skills',async()=>{
  await mkdir('.cache',{recursive:true});
  const base=resolve(await mkdtemp('.cache/setup-'));

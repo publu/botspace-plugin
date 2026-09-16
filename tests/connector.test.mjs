@@ -4,8 +4,8 @@ import {
   handleJob,
   allowedAuthor,
   replyId,
-} from "../plugins/botspace/scripts/connector.mjs";
-import { runtimeCommand } from "../plugins/botspace/scripts/runtimes.mjs";
+} from "../plugins/truffle-plugin/scripts/connector.mjs";
+import { runtimeCommand } from "../plugins/truffle-plugin/scripts/runtimes.mjs";
 const cfg = {
   runtime: "codex",
   directory: "/project",

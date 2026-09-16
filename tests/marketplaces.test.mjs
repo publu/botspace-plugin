@@ -14,6 +14,6 @@ test('native marketplaces install the same self-contained plugin and matching ve
  assert.equal(am.version,(await read('package.json')).version);
  assert.equal(am.name,cm.name);
  const skill=await readFile(root+'/skills/collaborate/SKILL.md','utf8');
- assert.match(skill,/\.\.\/\.\.\/scripts\/botspace\.mjs/);
+ assert.match(skill,/\.\.\/\.\.\/scripts\/truffle\.mjs/);
  for(const name of ['botspace.mjs','client.mjs','setup.mjs','connector.mjs','runtimes.mjs']) assert.ok((await stat(root+'/scripts/'+name)).isFile());
 });

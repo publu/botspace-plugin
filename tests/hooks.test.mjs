@@ -6,7 +6,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 const exec = promisify(execFile);
-const root = resolve("plugins/botspace");
+const root = resolve("plugins/truffle-plugin");
 const hooks = JSON.parse(await readFile(join(root, "hooks/hooks.json"), "utf8")).hooks;
 async function run(cwd, event = "SessionStart", extraEnv = {}) {
   const env = { ...process.env, CLAUDE_PLUGIN_ROOT: root };
