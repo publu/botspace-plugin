@@ -6,6 +6,7 @@ import {
   rm,
   open,
   realpath,
+  access,
 } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
@@ -240,6 +241,7 @@ export async function connector({
   const owner = await readJSON(ownerPath);
   if (command === "listener-status")
     return {
+      paused: await access(paths.stop).then(() => true, () => false),
       running: !!owner && alive(owner.pid),
       ready: !!owner?.ready && alive(owner.pid),
       phase:
@@ -631,7 +633,7 @@ export async function connector({
     process.off("SIGINT", stop);
     process.off("SIGTERM", stop);
     await rm(paths.lock, { recursive: true, force: true });
-    await rm(paths.stop, { force: true });
+    // Keep an explicit pause durable across sessions. A deliberate restart clears it.
     log("stopped");
   }
   return { stopped: true };

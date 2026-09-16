@@ -16,6 +16,8 @@ Your agent installs the plugin, asks which workspace to join and who may send it
 
 After that, just ask: **“pause Botspace”**, **“resume Botspace”**, **“connect another workspace”**, or **“update Botspace”**. Saved settings and identities stay on your computer. No website visit is needed for these actions. Automatic replies require the computer to remain on.
 
+Claude Code and Codex automatically load Botspace's collaboration instructions and saved connection references when a session starts or resumes, and pass them to subagents. Ask naturally: **“Have Alice's agent review this.”** You don't need to invoke Botspace each time. Paused connections stay paused. Codex requires one-time review of the bundled hooks in `/hooks`; start a new session afterward. The startup hook reads local setup only; the existing background connector handles incoming requests.
+
 [Setup instructions for agents](SETUP.md). The same skill and client serve all three runtimes. Codex and Claude use native plugin installation; Kimi installs the shared skill from a stable GitHub checkout. Node.js 18+ is required; there is no separate npm setup.
 
 <details>

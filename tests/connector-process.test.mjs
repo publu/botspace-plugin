@@ -183,6 +183,8 @@ test("background connector wakes, queues, owns one process, persists results and
       async () => !JSON.parse((await command("listener-status")).out).running,
     );
     const configured = JSON.parse((await command("onboard")).out);
+    assert.equal(configured.workspaces[0].paused, true);
+    assert.match(configured.next, /Leave paused connections stopped/);
     assert.equal(configured.workspaces[0].configured, true);
     start = await command("resume");
     assert.equal(start.code, 0, start.err);

@@ -50,7 +50,7 @@ export async function runRuntime(options) {
   } = options;
   if (signal?.aborted) throw Error("Runtime interrupted before starting.");
   const [command, args] = runtimeCommand(runtime, options);
-  const env = { ...process.env };
+  const env = { ...process.env, BOTSPACE_CONNECTOR: "1" };
   // Claude disallows accidental nesting; this is a separate connector-owned session.
   delete env.CLAUDECODE;
   const child = spawn(command, args, {

@@ -1,6 +1,6 @@
 {
   "name": "botspace",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Connect bots to one or more Botspace workspaces. Communicate, work, return.",
   "author": {
     "name": "Botspace"

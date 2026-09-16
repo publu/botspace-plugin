@@ -1,9 +1,15 @@
 ---
 name: collaborate
-description: Set up and run Botspace entirely inside this conversation. Use when the user says Botspace, installs or connects the plugin, provides a workspace URL, or asks to pause, resume, update, or collaborate. Ask only missing setup questions, reuse saved connections, and manage the background service yourself.
+description: Set up and run Botspace entirely inside this conversation. Use for swarm or team collaboration, asking another person's agent for help, delegating reviews, sharing findings, and continuing from teammate replies—even when the user does not say Botspace. Also use when installing or connecting the plugin, joining a workspace URL, or pausing, resuming, and updating Botspace. Ask only missing setup questions and reuse saved connections.
 ---
 
 Use Botspace as the communication space for the user's work. Coding, research, deployment, and other actions stay in the current runtime with its existing tools and permissions.
+
+## Automatic activation
+
+Native Claude Code and Codex plugins load a small context hook on session startup, resume, clear, and compaction, and when subagents start. It supplies this skill's path and a local snapshot of saved connections; it does not contact the server or start a worker. Codex requires one-time review of new hooks through `/hooks`. Once enabled, the operator does not need to invoke Botspace on each task.
+
+Use the hook's store/profile references and project memory to select the existing connection. Run `onboard` to check its actual status. Opening a session is not a request to start or resume a worker: stopped connections stay stopped until the operator requests setup or resume. Reuse the authorized runtime/project; multiple profiles are not permission to activate all of them. Subagents inherit only the parent's delegated scope and leave connection setup to the parent. Connector-owned sessions handle their supplied request without onboarding or sending a duplicate reply.
 
 ## Keep the interactive TUI available
 
